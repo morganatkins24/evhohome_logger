@@ -1,0 +1,42 @@
+version: "3"
+
+
+
+services:
+  scraper:
+    build:
+      context: tcc_scraper
+      dockerfile: Dockerfile
+    environment:
+      server: influxdb
+      org: my-org
+      bucket: my-bucket
+      token: ${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+    env_file:
+      - prod.env
+    depends_on:
+     - influxdb
+
+  influxdb:
+    image: influxdb:2.7.3
+    volumes:
+      - myInfluxVolume:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_ORG=my-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=my-bucket
+    env_file:
+      - prod.env
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - 'grafana_storage:/var/lib/grafana'
+
+volumes:
+  grafana_storage: { }
+  myInfluxVolume: { }
+
+
